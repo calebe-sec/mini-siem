@@ -1,0 +1,34 @@
+ssh:
+  ssh_failed_password:
+    keyword: "Failed password"
+    regex: 'Failed password for (?P<user>\w+) from (?P<ip>[\d.]+) port (?P<port>\d+)'
+  ssh_accepted_password:
+    keyword: "Accepted password"
+    regex: 'Accepted password for (?P<user>\w+) from (?P<ip>[\d.]+) port (?P<port>\d+)'
+  ssh_invalid_user:
+    keyword: "Invalid user"
+    regex: 'Invalid user (?P<user>\w+) from (?P<ip>[\d.]+) port (?P<port>\d+)'
+  ssh_connection_closed:
+    keyword: "Connection closed"
+    regex: 'Connection closed by (?P<ip>[\d.]+) port (?P<port>\d+)'
+  ssh_disconnected:
+    keyword: "Disconnected from"
+    regex: 'Disconnected from (?:user (?P<user>\w+) )?(?P<ip>[\d.]+) port (?P<port>\d+)'
+
+sudo:
+  sudo_command:
+    keyword: "COMMAND="
+    regex: '(?P<user>\w+)\s+:.*COMMAND=(?P<command>.+)'
+  sudo_auth_failure:
+    keyword: "pam_unix(sudo:auth)"
+    regex: 'authentication failure;.*user=(?P<user>\w+)'
+  su_session_opened:
+    keyword: "session opened for user"
+    regex: 'session opened for user (?P<user>\w+)'
+  su_auth_failure:
+    keyword: "FAILED SU"
+    regex: 'FAILED SU \(to (?P<target_user>\w+)\) (?P<user>\w+)'
+
+nginx:
+  user_agent:
+    keyword: " "

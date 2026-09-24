@@ -1,0 +1,148 @@
+version: 1.0
+category: execution
+
+rules:
+  - id: EXEC-001
+    name: PowerShell Encoded Command
+    enabled: true
+
+    metadata:
+      description: Detect PowerShell using encoded commands.
+      severity: high
+      confidence: 90
+      author: Calebe
+      created: 2026-08-05
+      mitre:
+        tactic: execution
+        technique: T1059.001
+
+    when:
+      all:
+        - field: process
+          operator: equals
+          value: powershell.exe
+          case_sensitive: false
+
+        - field: command_line
+          operator: contains
+          value: -enc
+
+    response:
+      alert: true
+      title: Encoded PowerShell detected
+      message: PowerShell executed using encoded commands.
+      severity: high
+
+  - id: EXEC-002
+    name: PowerShell Download String
+    enabled: true
+
+    metadata:
+      description: Detect PowerShell using DownloadString or Invoke-WebRequest.
+      severity: high
+      confidence: 90
+      author: Calebe
+      created: 2026-08-05
+      mitre:
+        tactic: execution
+        technique: T1059.001
+
+    when:
+      all:
+        - field: process
+          operator: equals
+          value: powershell.exe
+          case_sensitive: false
+
+        - any:
+            - field: command_line
+              operator: contains
+              value: DownloadString
+
+            - field: command_line
+              operator: contains
+              value: Invoke-WebRequest
+
+    response:
+      alert: true
+      title: DownloadString PowerShell detected
+      message: PowerShell executed using DownloadString.
+      severity: high
+
+  - id: EXEC-003
+    name: Office Spawning CMD
+    enabled: true
+
+    metadata:
+      description: Detect an Office application spawning cmd.exe.
+      severity: high
+      confidence: 90
+      author: Calebe
+      created: 2026-08-05
+      mitre:
+        tactic: execution
+        techniques:
+          - T1204
+          - T1059.003
+
+    when:
+      all:
+        - field: parent_process
+          operator: any_of
+          value:
+            - winword.exe
+            - excel.exe
+            - outlook.exe
+            - powerpnt.exe
+
+        - field: process
+          operator: equals
+          value: cmd.exe
+
+    response:
+      alert: true
+      title: Office Spawning Detected
+      message: cmd.exe executed as a child of an Office application.
+      severity: high
+
+  - id: EXEC-004
+    name: Suspicious Command Prompt
+    enabled: true
+
+    metadata:
+      description: Detect suspicious commands commonly used for LOLBins abuse.
+      severity: high
+      confidence: 85
+      author: Calebe
+      created: 2026-08-05
+      mitre:
+        tactic: execution
+        technique: T1059.003
+
+    when:
+      any:
+        - field: command_line
+          operator: contains
+          value: powershell
+
+        - field: command_line
+          operator: contains
+          value: curl
+ 
+        - field: command_line
+          operator: contains
+          value: bitsadmin
+
+        - field: command_line
+          operator: contains
+          value: certutil
+
+        - field: command_line
+          operator: contains
+          value: net localgroup administrators
+
+    response:
+      alert: true
+      title: Suspicious Command Prompt Detected
+      message: Suspicious Command Prompt executed.
+      severity: high

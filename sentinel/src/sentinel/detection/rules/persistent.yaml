@@ -1,0 +1,119 @@
+version: 1.0
+category: persistence
+
+rules:
+  - id: PERS-001
+    name: New Scheduled Task Created
+    enabled: true
+
+    metadata:
+      description: Detect creation of a new scheduled task, commonly used for persistence.
+      severity: medium
+      confidence: 75
+      author: Calebe
+      created: 2026-08-06
+      mitre:
+        tactic: persistence
+        technique: T1053.005
+
+    when:
+      all:
+        - field: process
+          operator: equals
+          value: schtasks.exe
+
+        - field: command_line
+          operator: contains
+          value: /create
+
+    response:
+      alert: true
+      title: Scheduled Task Created
+      message: A new scheduled task was created, which may indicate persistence.
+      severity: medium
+
+  - id: PERS-002
+    name: Registry Run Key Modified
+    enabled: true
+
+    metadata:
+      description: Detect modification of Run/RunOnce registry keys used for auto-start persistence.
+      severity: high
+      confidence: 85
+      author: Calebe
+      created: 2026-08-06
+      mitre:
+        tactic: persistence
+        technique: T1547.001
+
+    when:
+      any:
+        - field: registry_path
+          operator: contains
+          value: CurrentVersion\Run
+
+        - field: registry_path
+          operator: contains
+          value: CurrentVersion\RunOnce
+
+    response:
+      alert: true
+      title: Registry Run Key Modified
+      message: A Run key was modified, possibly to establish persistence.
+      severity: high
+
+  - id: PERS-003
+    name: New Windows Service Created
+    enabled: true
+
+    metadata:
+      description: Detect creation of a new Windows service, commonly abused for persistence.
+      severity: high
+      confidence: 80
+      author: Calebe
+      created: 2026-08-06
+      mitre:
+        tactic: persistence
+        technique: T1543.003
+
+    when:
+      all:
+        - field: event_id
+          operator: equals
+          value: 7045
+
+    response:
+      alert: true
+      title: New Service Created
+      message: A new service was installed, which may indicate persistence.
+      severity: high
+
+  - id: PERS-004
+    name: New Local Administrator Account Created
+    enabled: true
+
+    metadata:
+      description: Detect creation of a new account added to the local administrators group.
+      severity: high
+      confidence: 85
+      author: Calebe
+      created: 2026-08-06
+      mitre:
+        tactic: persistence
+        technique: T1136.001
+
+    when:
+      any:
+        - field: command_line
+          operator: contains
+          value: net localgroup administrators /add
+
+        - field: event_id
+          operator: equals
+          value: 4732
+
+    response:
+      alert: true
+      title: Local Admin Account Modification Detected
+      message: An account was added to the local administrators group.
+      severity: high

@@ -1,0 +1,123 @@
+version: 1.0
+category: lateral_movement
+
+rules:
+  - id: LM-001
+    name: PsExec Execution Detected
+    enabled: true
+
+    metadata:
+      description: Detect execution of PsExec, commonly used for remote lateral movement.
+      severity: high
+      confidence: 85
+      author: Calebe
+      created: 2026-08-06
+      mitre:
+        tactic: lateral_movement
+        technique: T1021.002
+
+    when:
+      any:
+        - field: process
+          operator: equals
+          value: psexec.exe
+
+        - field: service_name
+          operator: contains
+          value: PSEXESVC
+
+    response:
+      alert: true
+      title: PsExec Execution Detected
+      message: PsExec was used to execute a remote process.
+      severity: high
+
+  - id: LM-002
+    name: Suspicious WMI Remote Process Creation
+    enabled: true
+
+    metadata:
+      description: Detect remote process creation via WMI, a common lateral movement technique.
+      severity: high
+      confidence: 80
+      author: Calebe
+      created: 2026-08-06
+      mitre:
+        tactic: lateral_movement
+        technique: T1021.006
+
+    when:
+      all:
+        - field: process
+          operator: equals
+          value: wmic.exe
+
+        - field: command_line
+          operator: contains
+          value: process call create
+
+    response:
+      alert: true
+      title: WMI Remote Execution Detected
+      message: WMI was used to spawn a process, possibly on a remote host.
+      severity: high
+
+  - id: LM-003
+    name: RDP Login from Unusual Source
+    enabled: true
+
+    metadata:
+      description: Detect RDP logon events (event ID 4624, logon type 10) that may indicate lateral movement.
+      severity: medium
+      confidence: 70
+      author: Calebe
+      created: 2026-08-06
+      mitre:
+        tactic: lateral_movement
+        technique: T1021.001
+
+    when:
+      all:
+        - field: event_id
+          operator: equals
+          value: 4624
+
+        - field: logon_type
+          operator: equals
+          value: 10
+
+    response:
+      alert: true
+      title: RDP Logon Detected
+      message: An RDP logon was detected and should be correlated with source IP reputation.
+      severity: medium
+
+  - id: LM-004
+    name: PowerShell Remoting Session Established
+    enabled: true
+
+    metadata:
+      description: Detect use of PowerShell Remoting (WinRM) to execute commands on remote hosts.
+      severity: high
+      confidence: 80
+      author: Calebe
+      created: 2026-08-06
+      mitre:
+        tactic: lateral_movement
+        technique: T1021.006
+
+    when:
+      any:
+        - field: command_line
+          operator: contains
+          value: Enter-PSSession
+
+        - field: command_line
+          operator: contains
+          value: Invoke-Command
+
+    response:
+      alert: true
+      title: PowerShell Remoting Detected
+      message: PowerShell Remoting was used, possibly for remote command execution.
+      severity: high

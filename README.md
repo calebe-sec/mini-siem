@@ -86,10 +86,10 @@ O LogRecon **não decide o que é um alerta** — essa responsabilidade é só d
 - [x] **Etapa 3 — API REST de ingestão**
     - [x] `POST /api/sources` — cadastra `LogSource` (testado via curl)
     - [x] `POST /api/events` — recebe `LogEvent` já processado, resolve a fonte pelo nome (testado via curl)
-    - [ ] Endpoints de consulta (`GET /api/events`, filtros por severidade/data)
-- [ ] **Etapa 4 — API REST de alertas**
-    - [ ] `POST /api/alerts` — recebe alerta já classificado pelo Sentinel (cria `DetectionRule`/reusa existente + vincula `LogEvent`s via `AlertEvent`)
-    - [ ] `GET /api/alerts` — lista/filtra alertas, com paginação
+    - [x] Endpoints de consulta (`GET /api/events`, filtros por severidade/data)
+- [x] **Etapa 4 — API REST de alertas**
+    - [x] `POST /api/alerts` — recebe alerta já classificado pelo Sentinel (cria `DetectionRule`/reusa existente + vincula `LogEvent`s via `AlertEvent`)
+    - [x] `GET /api/alerts` — lista/filtra alertas, com paginação
 - [ ] **Etapa 5 — Autenticação service-to-service** (API key simples entre Sentinel e LogRecon)
 - [ ] **Etapa 6 — Dashboard** (HTML/CSS/JS puro consumindo a API: tabela de eventos recentes, contador por severidade, gráfico de eventos por hora)
 - [ ] **Etapa 7 — Polimento pro GitHub** (README próprio do repositório, prints do dashboard, log de exemplo incluso)

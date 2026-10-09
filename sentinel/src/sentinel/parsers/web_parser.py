@@ -9,12 +9,10 @@ class NginxParseLog(BaseParser):
     #def __init__(self, patterns_path="config/log_patterns.yaml"):
 
     def parse(self, filepath):
-        
         events = []
         
         with open(filepath) as f:
             for line in f:
-
                 match = self.HEADER.search(line)
 
                 if not match:

@@ -25,7 +25,7 @@ ALL_OPTIONAL_FIELDS = {
     "target_user", "command",
     "method", "url", "status_code", "user_agent", "referrer",
 }
-
+#validates events against expected and unexpected ones
 def validate_event(event):
     expected = EXPECTED_FIELDS.get(event.event_type, set())
     unexpected = ALL_OPTIONAL_FIELDS - expected

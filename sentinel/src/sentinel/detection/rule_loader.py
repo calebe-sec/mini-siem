@@ -12,14 +12,14 @@ class RulerLoader:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
-    #metodo silencioso só para validar os caminhos
+    #silent method just to validate the paths
     def _valid_path(self, source: list) -> bool:
         if not source:
             self.logger.error(f"[!] None path yaml finded")
             return False
         return True
     
-    #vai abrir os .yaml e retornar num dict com tudo
+    #It will open the .yaml files and return a dictionary containing everything
     def open_conditions_yaml(self, source: list) -> dict:
         all_rules = []
         if self._valid_path(source) is True:
@@ -36,5 +36,5 @@ if __name__ == "__main__":
     loader = RulerLoader()
     rules = loader.open_conditions_yaml(RulerLoader.FILES)
     
-    # Rodei isso para poder saber pq não retornava as listas
+    # I ran this to find out why the lists weren't being returned
     # print(RulerLoader.FILES)

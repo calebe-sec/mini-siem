@@ -13,7 +13,7 @@ class EngineRule:
     def __init__(self, rules):
         self.rules = rules
 
-    #esse metodo aqui vai proocurar a condição que tem no .yaml
+    # This method will look for the condition specified in the .yaml file.
     def evaluate_condition(self,condition: dict, event: dict) -> bool:
         if "all" in condition:
             return all(self.evaluate_condition(c,event) for c in condition["all"])
@@ -21,7 +21,7 @@ class EngineRule:
             return any(self.evaluate_condition(c,event) for c in condition["any"])
         return self.evaluate_field(condition, event)
     
-    #aqui vai por campos que tem no .yaml
+    #here are the fields found in the .yaml
     def evaluate_field(self, condition: dict, event: dict) -> bool:
         field_name = condition["field"]
         operator_name = condition["operator"]
@@ -32,7 +32,7 @@ class EngineRule:
         operator_func = self.OPERATORS[operator_name]
         return operator_func(actual_value, expected_value)
     
-    #construtor simples de resposta
+    #simple constructor for response
     def build_response(self, rule: dict, event: dict) -> dict:
         
         response = rule["response"]
@@ -44,7 +44,7 @@ class EngineRule:
             "matched_event": event,
         }
     
-    #rodar tudo
+    #run everything
     def run(self, event: dict) -> list[dict]:
         alerts = []
         for rule in self.rules:

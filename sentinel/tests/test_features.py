@@ -5,7 +5,7 @@ from enum import Enum
 import numpy as np
 import pytest
 
-from sentinel.ml.features import (
+from src.sentinel.ml.features import (
     FEATURE_NAMES,
     FeatureConfig,
     build_windows,

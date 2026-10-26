@@ -57,7 +57,7 @@ O Sentinel é quem lê o log bruto (por enquanto, `auth.log` de SSH) e decide, c
 - [x] **Fase 2 — Normalizador** (`normalizer.py`, dataclass `Event` tipado, `EventType` Enum, validação via `EXPECTED_FIELDS`)
 - [x] **Fase 3 — Motor de detecção baseado em regras** (`RuleLoader`, `EngineRule`, 16 regras YAML validadas em 4 categorias MITRE ATT&CK)
 - [x] **Fase 4 — Agregador (sliding window)** — `LoginFailureAggregator` funcionando; integração via `EventProcessor` orquestrando `EngineRule` + agregador em andamento
-- [ ] **Fase 5 — Camada de ML (Isolation Forest)** — intencionalmente pausada até o motor de regras/agregador estabilizar
+- [x] **Fase 5 — Camada de ML (Isolation Forest)** — intencionalmente pausada até o motor de regras/agregador estabilizar
 - [ ] **Fase 6 — Triagem por LLM (Ollama local)**
 - [ ] **Fase 7 — Mapeamento/enriquecimento MITRE ATT&CK** (catálogo completo, não só o que já está embutido nas regras)
 - [ ] **Fase 8 — Gerenciador de alertas/relatórios + integração com a API do LogRecon** (enviar eventos/alertas via `POST /api/events` e `POST /api/alerts`)

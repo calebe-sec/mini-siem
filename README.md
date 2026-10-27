@@ -1,26 +1,26 @@
 # Mini-SIEM: Sentinel + LogRecon
 
-Este projeto é dividido em dois sistemas separados que se comunicam via API REST:
+This project is split into two separate systems that communicate through a REST API:
 
-- **Sentinel** (Python) — o cérebro: lê logs brutos, entende o que está acontecendo e decide o que é um alerta.
-- **LogRecon** (Java + Spring Boot) — o corpo: recebe o que o Sentinel decidiu, guarda em banco, expõe API e mostra num dashboard.
+- **Sentinel** (Python): the brain. It reads raw logs, understands what is happening and decides what counts as an alert.
+- **LogRecon** (Java + Spring Boot): the body. It receives what Sentinel decided, stores it in a database, exposes an API and shows it on a dashboard.
 
-Nenhum dos dois duplica o trabalho do outro. O Sentinel nunca persiste nada de forma definitiva nem serve API pra terceiros; o LogRecon nunca faz parsing de log nem decide sozinho o que é um alerta.
+Neither one duplicates the other's work. Sentinel never persists anything permanently and never serves an API to third parties; LogRecon never parses logs and never decides on its own what an alert is.
 
 ```mermaid
 flowchart LR
     subgraph PY["Sentinel (Python)"]
         direction TB
-        P1[Parsers] --> P2[Normalizador]
-        P2 --> P3[Motor de regras YAML]
-        P3 --> P4[Agregador - sliding window]
+        P1[Parsers] --> P2[Normalizer]
+        P2 --> P3[YAML rule engine]
+        P3 --> P4[Aggregator - sliding window]
         P4 --> P5[ML - Isolation Forest]
-        P5 --> P6[Triagem LLM - Ollama]
+        P5 --> P6[LLM triage - Ollama]
     end
 
     subgraph JV["LogRecon (Java/Spring)"]
         direction TB
-        J1[API REST] --> J2[(H2/Postgres)]
+        J1[REST API] --> J2[(H2/Postgres)]
         J2 --> J3[Dashboard]
     end
 
@@ -29,82 +29,82 @@ flowchart LR
 
 ---
 
-## Sumário
+## Table of contents
 
-- [O que o Sentinel faz](https://claude.ai/chat/79ded7d2-091f-427a-aa2b-ccb989876e30#o-que-o-sentinel-faz)
-- [Progresso do Sentinel](https://claude.ai/chat/79ded7d2-091f-427a-aa2b-ccb989876e30#progresso-do-sentinel)
-- [Para que serve o LogRecon](https://claude.ai/chat/79ded7d2-091f-427a-aa2b-ccb989876e30#para-que-serve-o-logrecon)
-- [Progresso do LogRecon](https://claude.ai/chat/79ded7d2-091f-427a-aa2b-ccb989876e30#progresso-do-logrecon)
-- [Como os dois se conectam](https://claude.ai/chat/79ded7d2-091f-427a-aa2b-ccb989876e30#como-os-dois-se-conectam)
-
----
-
-## O que o Sentinel faz
-
-O Sentinel é quem lê o log bruto (por enquanto, `auth.log` de SSH) e decide, com base em regras e depois em modelos, se aquilo é normal ou se é um alerta de segurança:
-
-1. **Parser** — lê a linha crua do log e extrai os campos (usuário, IP, tipo de evento, timestamp).
-2. **Normalizador** — transforma isso num formato padronizado e tipado, independente da fonte original.
-3. **Motor de regras** — compara o evento normalizado contra regras YAML mapeadas pra táticas do MITRE ATT&CK (ex: "5 logins falhos do mesmo IP em 2 minutos" → Credential Access).
-4. **Agregador** — junta eventos relacionados numa janela de tempo (sliding window), pra regras que dependem de repetição, não de um evento isolado.
-5. **Camada de ML** (Isolation Forest) — detecta anomalias que as regras fixas não cobrem.
-6. **Triagem por LLM** (Ollama local, por privacidade) — dá uma segunda opinião mais "humana" sobre o que os passos anteriores sinalizaram, antes de virar alerta de verdade.
-7. Ao final, o que sobrevive esse pipeline inteiro é enviado pro LogRecon via API REST.
-
-## Progresso do Sentinel
-
-- [x] **Fase 1 — Parsers de log** (`auth_parser.py`, classe `BaseParser` abstrata, padrões YAML)
-- [x] **Fase 2 — Normalizador** (`normalizer.py`, dataclass `Event` tipado, `EventType` Enum, validação via `EXPECTED_FIELDS`)
-- [x] **Fase 3 — Motor de detecção baseado em regras** (`RuleLoader`, `EngineRule`, 16 regras YAML validadas em 4 categorias MITRE ATT&CK)
-- [x] **Fase 4 — Agregador (sliding window)** — `LoginFailureAggregator` funcionando; integração via `EventProcessor` orquestrando `EngineRule` + agregador em andamento
-- [x] **Fase 5 — Camada de ML (Isolation Forest)** — intencionalmente pausada até o motor de regras/agregador estabilizar
-- [ ] **Fase 6 — Triagem por LLM (Ollama local)**
-- [ ] **Fase 7 — Mapeamento/enriquecimento MITRE ATT&CK** (catálogo completo, não só o que já está embutido nas regras)
-- [ ] **Fase 8 — Gerenciador de alertas/relatórios + integração com a API do LogRecon** (enviar eventos/alertas via `POST /api/events` e `POST /api/alerts`)
+- [What Sentinel does](#what-sentinel-does)
+- [Sentinel progress](#sentinel-progress)
+- [What LogRecon is for](#what-logrecon-is-for)
+- [LogRecon progress](#logrecon-progress)
+- [How the two connect](#how-the-two-connect)
 
 ---
 
-## Para que serve o LogRecon
+## What Sentinel does
 
-O LogRecon **não decide o que é um alerta** — essa responsabilidade é só do Sentinel. O papel dele é:
+Sentinel reads the raw log (for now, the SSH `auth.log`) and decides, based on rules and later on models, whether what it sees is normal or a security alert:
 
-- Expor uma **API REST** que recebe eventos e alertas já processados.
-- **Persistir** tudo de forma estruturada (fontes, eventos, regras, alertas, táticas MITRE).
-- Servir um **dashboard** web pra visualizar o que está acontecendo, sem precisar mexer em banco ou script Python.
+1. **Parser**: reads the raw log line and extracts the fields (user, IP, event type, timestamp).
+2. **Normalizer**: turns that into a standardized, typed format, independent of the original source.
+3. **Rule engine**: compares the normalized event against YAML rules mapped to MITRE ATT&CK tactics (e.g. "5 failed logins from the same IP in 2 minutes" → Credential Access).
+4. **Aggregator**: groups related events in a time window (sliding window), for rules that depend on repetition rather than on a single event.
+5. **ML layer** (Isolation Forest): detects anomalies that fixed rules do not cover.
+6. **LLM triage** (local Ollama, for privacy): gives a more "human" second opinion on what the previous steps flagged, before it becomes a real alert.
+7. At the end, whatever survives the whole pipeline is sent to LogRecon through the REST API.
 
-## Progresso do LogRecon
+## Sentinel progress
 
-- [x] **Etapa 0 — Escopo e decisões**: log único pra começar (SSH `auth.log`), banco H2 em memória
-- [x] **Etapa 1 — Setup do projeto Spring Boot**
-- [x] **Etapa 2 — Modelagem das entidades JPA**, com teste próprio pra cada uma:
+- [x] **Phase 1: Log parsers** (`auth_parser.py`, abstract `BaseParser` class, YAML patterns)
+- [x] **Phase 2: Normalizer** (`normalizer.py`, typed `Event` dataclass, `EventType` Enum, validation via `EXPECTED_FIELDS`)
+- [x] **Phase 3: Rule-based detection engine** (`RuleLoader`, `EngineRule`, 16 YAML rules validated across 4 MITRE ATT&CK categories)
+- [x] **Phase 4: Aggregator (sliding window)**: `LoginFailureAggregator` working; integration through an `EventProcessor` that orchestrates `EngineRule` + aggregator is in progress
+- [x] **Phase 5: ML layer (Isolation Forest)**: intentionally paused until the rule engine/aggregator stabilize
+- [ ] **Phase 6: LLM triage (local Ollama)**
+- [ ] **Phase 7: MITRE ATT&CK mapping/enrichment** (full catalog, not only what is already embedded in the rules)
+- [ ] **Phase 8: Alert/report manager + LogRecon API integration** (send events/alerts via `POST /api/events` and `POST /api/alerts`)
+
+---
+
+## What LogRecon is for
+
+LogRecon **does not decide what an alert is**; that responsibility belongs to Sentinel alone. Its role is to:
+
+- Expose a **REST API** that receives events and alerts that have already been processed.
+- **Persist** everything in a structured way (sources, events, rules, alerts, MITRE tactics).
+- Serve a web **dashboard** to see what is happening, without touching the database or a Python script.
+
+## LogRecon progress
+
+- [x] **Step 0: Scope and decisions**: a single log to start with (SSH `auth.log`), in-memory H2 database
+- [x] **Step 1: Spring Boot project setup**
+- [x] **Step 2: JPA entity modeling**, with a dedicated test for each one:
     - [x] `LogSource`
     - [x] `LogEvent`
     - [x] `MitreTactic`
     - [x] `DetectionRule`
     - [x] `Alert`
-    - [x] `AlertEvent` (associativa N:N entre `Alert` e `LogEvent`)
-- [x] **Etapa 3 — API REST de ingestão**
-    - [x] `POST /api/sources` — cadastra `LogSource` (testado via curl)
-    - [x] `POST /api/events` — recebe `LogEvent` já processado, resolve a fonte pelo nome (testado via curl)
-    - [x] Endpoints de consulta (`GET /api/events`, filtros por severidade/data)
-- [x] **Etapa 4 — API REST de alertas**
-    - [x] `POST /api/alerts` — recebe alerta já classificado pelo Sentinel (cria `DetectionRule`/reusa existente + vincula `LogEvent`s via `AlertEvent`)
-    - [x] `GET /api/alerts` — lista/filtra alertas, com paginação
-- [ ] **Etapa 5 — Autenticação service-to-service** (API key simples entre Sentinel e LogRecon)
-- [ ] **Etapa 6 — Dashboard** (HTML/CSS/JS puro consumindo a API: tabela de eventos recentes, contador por severidade, gráfico de eventos por hora)
-- [ ] **Etapa 7 — Polimento pro GitHub** (README próprio do repositório, prints do dashboard, log de exemplo incluso)
+    - [x] `AlertEvent` (N:N join between `Alert` and `LogEvent`)
+- [x] **Step 3: Ingestion REST API**
+    - [x] `POST /api/sources`: registers a `LogSource` (tested with curl)
+    - [x] `POST /api/events`: receives an already-processed `LogEvent`, resolves the source by name (tested with curl)
+    - [x] Query endpoints (`GET /api/events`, filters by severity/date)
+- [x] **Step 4: Alerts REST API**
+    - [x] `POST /api/alerts`: receives an alert already classified by Sentinel (creates or reuses a `DetectionRule` + links `LogEvent`s through `AlertEvent`)
+    - [x] `GET /api/alerts`: lists/filters alerts, with pagination
+- [ ] **Step 5: Service-to-service authentication** (simple API key between Sentinel and LogRecon)
+- [ ] **Step 6: Dashboard** (plain HTML/CSS/JS consuming the API: table of recent events, counter by severity, chart of events per hour)
+- [ ] **Step 7: GitHub polish** (the repository's own README, dashboard screenshots, sample log included)
 
 ---
 
-## Como os dois se conectam
+## How the two connect
 
-Fluxo de dados, na ordem em que acontece:
+Data flow, in the order it happens:
 
-1. O Sentinel processa um log e termina de decidir a severidade/classificação de um evento.
-2. Ele faz `POST /api/events` no LogRecon, informando `sourceName` (a fonte precisa já existir — cadastrada previamente via `POST /api/sources`).
-3. Se o pipeline de regras/ML/LLM do Sentinel concluir que aquilo é um alerta, ele faz `POST /api/alerts`, referenciando a regra que disparou e os eventos envolvidos.
-4. O LogRecon persiste tudo e serve tanto a consulta via API (`GET`) quanto a visualização no dashboard.
+1. Sentinel processes a log and finishes deciding the severity/classification of an event.
+2. It sends `POST /api/events` to LogRecon, providing `sourceName` (the source must already exist, registered beforehand via `POST /api/sources`).
+3. If Sentinel's rules/ML/LLM pipeline concludes that the event is an alert, it sends `POST /api/alerts`, referencing the rule that fired and the events involved.
+4. LogRecon persists everything and serves both API queries (`GET`) and the dashboard view.
 
-Autenticação entre os dois serviços (Etapa 5 do LogRecon) ainda não está implementada — por enquanto a comunicação é sem autenticação, só em ambiente local de desenvolvimento.
+Authentication between the two services (LogRecon Step 5) is not implemented yet. For now, communication has no authentication and is meant for a local development environment only.
 
 ---

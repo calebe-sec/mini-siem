@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.sentinel.detection.sliding_window import Aggregator 
+from sentinel.detection.sliding_window import Aggregator # type: ignore #ignore
 
 T0 = datetime(2026, 1, 1, 12, 0, 0)
 

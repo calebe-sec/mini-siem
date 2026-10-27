@@ -5,9 +5,9 @@ import joblib
 import numpy as np
 import pytest
 
-from src.sentinel.ml.anomaly import MODEL_FORMAT_VERSION, AnomalyDetector
-from src.sentinel.ml.features import FEATURE_NAMES, build_windows
-from src.sentinel.ml.synthetic import ATTACK_NAMES, attack_events, clean_events
+from sentinel.ml.anomaly import MODEL_FORMAT_VERSION, AnomalyDetector # type: ignore #ignore
+from sentinel.ml.features import FEATURE_NAMES, build_windows # type: ignore #ignore
+from sentinel.ml.synthetic import ATTACK_NAMES, attack_events, clean_events # type: ignore #ignore
 
 SEED = 42
 

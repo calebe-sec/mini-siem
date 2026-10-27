@@ -1,9 +1,9 @@
 from datetime import datetime
 import pytest
 import logging
-from sentinel.normalizer.normalizer import normalize
-from sentinel.core.event_type import EventType
-from sentinel.core.event import Event
+from sentinel.normalizer.normalizer import normalize # type: ignore #ignore
+from sentinel.core.event_type import EventType # type: ignore #ignore
+from sentinel.core.event import Event # type: ignore #ignore
 
 def test_normalize_auth_log_ssh_success():
     data = {

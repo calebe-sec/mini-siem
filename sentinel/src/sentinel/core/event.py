@@ -6,15 +6,15 @@ from .event_type import EventType
 
 @dataclass
 class Event:
-    #sempre tem
+    #always present
     timestamp: datetime
     source_ip: str
     event_type: EventType
     source: str
     raw_message: str
 
-    #Alguns tem
-    user: Optional[str] = None
+    #some have
+    username: Optional[str] = None
     port: Optional[int] = None
     hostname: Optional[str] = None
     process: Optional[str] = None

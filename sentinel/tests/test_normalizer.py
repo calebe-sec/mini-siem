@@ -27,7 +27,7 @@ def test_normalize_auth_log_ssh_success():
     assert event.event_type == EventType.SSH_ACCEPTED_PASSWORD
     assert event.source == "auth_log"
     assert event.raw_message == "Accepted password for root from 192.168.1.50 port 54321 ssh2"
-    assert event.user == "root"
+    assert event.username == "root"
     assert event.port == 54321
     assert event.hostname == "test-host"
     assert event.process == "sshd"
@@ -55,7 +55,7 @@ def test_normalize_auth_log_sudo():
     assert event.source_ip == "127.0.0.1"
     assert event.event_type == EventType.SUDO_COMMAND
     assert event.source == "auth_log"
-    assert event.user == "root"
+    assert event.username == "root"
     assert event.port is None
     assert event.hostname == "localhost"
     assert event.process == "sudo"

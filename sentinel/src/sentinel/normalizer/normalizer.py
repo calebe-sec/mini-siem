@@ -9,9 +9,10 @@ MONTHS = {
     "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12
 }
 
-def _build_timestamp_auth(data, current_year=2026):
+def _build_timestamp_auth(data, current_year=None):
+    year = current_year or datetime.now().year
     return datetime(
-        year=current_year,
+        year=year,
         month=MONTHS[data["month"]],
         day=int(data["day"]),
         hour=int(data["hour"].split(":")[0]),
@@ -29,16 +30,16 @@ def _build_timestamp_web(data):
         second=int(data["sec"]),
     )
 
-def _normalize_auth(data):
+def _normalize_auth(data, year=None):
     event_type = EventType(data["event_type"]) if data.get("event_type") else None
 
     return Event(
-        timestamp=_build_timestamp_auth(data),
+        timestamp=_build_timestamp_auth(data, year),
         source_ip=data.get("ip"),
         event_type=event_type,
         source="auth_log",
         raw_message=data.get("message", ""),
-        user=data.get("user"),
+        username=data.get("user"),
         port=int(data["port"]) if data.get("port") else None,
         hostname=data.get("hostname"),
         process=data.get("process"),
@@ -61,9 +62,9 @@ def _normalize_web(data, source):
         referrer=data.get("referrer"),
     )
 
-def normalize(data, source):
+def normalize(data, source, year=None):
     if source == "auth_log":
-        event = _normalize_auth(data)
+        event = _normalize_auth(data, year)
     elif source in ("nginx", "apache"):
         event = _normalize_web(data, source)
     else:

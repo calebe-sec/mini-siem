@@ -6,7 +6,7 @@ class EngineRule:
     OPERATORS = {
         "equals": lambda actual, expected: actual == expected,
         "contains": lambda actual, expected: expected.lower() in str(actual).lower(),
-        "greater_than": lambda actual, expected: actual > expected,
+        "greater_than": lambda actual, expected: actual is not None and actual > expected,
         "any_of": lambda actual, expected: actual in expected,
         }
 

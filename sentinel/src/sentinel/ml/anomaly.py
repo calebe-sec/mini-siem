@@ -23,14 +23,14 @@ MODEL_FORMAT_VERSION = 1
 class Anomaly:
     """What the ML layer hands to the alert manager and to the LLM triage step."""
 
-    entity: str                                
-    window_start: datetime
+    entity: str
+    window_start: datetime                      # <- this line was missing
     window_end: datetime
-    score: float                                
-    threshold: float                           
+    score: float
+    threshold: float
     features: dict[str, float]
-    top_deviations: list[tuple[str, float]]     
-    source: str = "ml"                          
+    top_deviations: list[tuple[str, float]]
+    source: str = "ml"
 
     def to_dict(self) -> dict:
         """JSON-ready dict, for the LLM prompt or a future logrecon_client call."""
@@ -68,7 +68,7 @@ class AnomalyDetector:
             raise ValueError("threshold_percentile must be between 0 and 50 (exclusive)")
         if top_k < 1:
             raise ValueError("top_k must be at least 1")
-        
+
         self.n_estimators = n_estimators
         self.threshold_percentile = threshold_percentile
         self.random_state = random_state
@@ -79,7 +79,7 @@ class AnomalyDetector:
     def fit(self,
         windows: Sequence[WindowFeatures],
         calibration: Sequence[WindowFeatures] | None = None, ) -> "AnomalyDetector":
-        
+
         if len(windows) < self.min_train_windows:
             raise ValueError(
                 f"Need at least {self.min_train_windows} clean windows to train, got {len(windows)}."
@@ -116,7 +116,7 @@ class AnomalyDetector:
         )
         return self
 
-    # ----------------------------------------------------------------- inference
+    # inference
 
     @property
     def is_fitted(self) -> bool:
@@ -167,7 +167,7 @@ class AnomalyDetector:
         order = np.argsort(-np.abs(z))[: self.top_k]
         return [(FEATURE_NAMES[i], float(z[i])) for i in order]
 
-    # --------------------------------------------------------------- persistence
+    # persistence
 
     def save(self, path: str | Path) -> None:
         state = self._require_fitted()

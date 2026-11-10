@@ -58,9 +58,9 @@ Sentinel reads the raw log (for now, the SSH `auth.log`) and decides, based on r
 - [x] **Phase 3: Rule-based detection engine** (`RuleLoader`, `EngineRule`, 16 YAML rules validated across 4 MITRE ATT&CK categories)
 - [x] **Phase 4: Aggregator (sliding window)**: `LoginFailureAggregator` working; integration through an `EventProcessor` that orchestrates `EngineRule` + aggregator is in progress
 - [x] **Phase 5: ML layer (Isolation Forest)**: intentionally paused until the rule engine/aggregator stabilize
-- [ ] **Phase 6: LLM triage (local Ollama)**
-- [ ] **Phase 7: MITRE ATT&CK mapping/enrichment** (full catalog, not only what is already embedded in the rules)
-- [ ] **Phase 8: Alert/report manager + LogRecon API integration** (send events/alerts via `POST /api/events` and `POST /api/alerts`)
+- [X] **Phase 6: LLM triage (local Ollama)**
+- [X] **Phase 7: MITRE ATT&CK mapping/enrichment** (full catalog, not only what is already embedded in the rules)
+- [X] **Phase 8: Alert/report manager + LogRecon API integration** (send events/alerts via `POST /api/events` and `POST /api/alerts`)
 
 ---
 

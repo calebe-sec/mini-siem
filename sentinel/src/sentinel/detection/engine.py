@@ -1,17 +1,29 @@
 from pathlib import Path
-from rule_loader import RulerLoader
+from sentinel.detection.rule_loader import RulerLoader
 
 class EngineRule:
 
     OPERATORS = {
         "equals": lambda actual, expected: actual == expected,
-        "contains": lambda actual, expected: expected.lower() in str(actual).lower(),
+        "contains": lambda actual, expected: actual is not None and str(expected).lower() in str(actual).lower(),
         "greater_than": lambda actual, expected: actual is not None and actual > expected,
         "any_of": lambda actual, expected: actual in expected,
         }
 
     def __init__(self, rules):
         self.rules = rules
+        for rule in rules:
+            self._check_condition(rule["when"], rule.get("id", "?"))
+
+    # Fail when the engine is built (startup), not in the middle of a log run.
+    def _check_condition(self, condition: dict, rule_id: str) -> None:
+        for key in ("all", "any"):
+            if key in condition:
+                for sub in condition[key]:
+                    self._check_condition(sub, rule_id)
+                return
+        if condition.get("operator") not in self.OPERATORS:
+            raise ValueError(f"rule {rule_id}: unknown operator {condition.get('operator')!r}")
 
     # This method will look for the condition specified in the .yaml file.
     def evaluate_condition(self,condition: dict, event: dict) -> bool:
@@ -23,24 +35,28 @@ class EngineRule:
     
     #here are the fields found in the .yaml
     def evaluate_field(self, condition: dict, event: dict) -> bool:
-        field_name = condition["field"]
-        operator_name = condition["operator"]
-        expected_value = condition["value"]
+        actual = event.get(condition["field"])
+        expected = condition["value"]
 
-        actual_value = event.get(field_name)
+        if condition.get("case_sensitive", True) is False:
+            if isinstance(actual, str):
+                actual = actual.lower()
+            if isinstance(expected, str):
+                expected = expected.lower()
+            elif isinstance(expected, list):
+                expected = [v.lower() if isinstance(v, str) else v for v in expected]
 
-        operator_func = self.OPERATORS[operator_name]
-        return operator_func(actual_value, expected_value)
-    
+        return self.OPERATORS[condition["operator"]](actual, expected)
+
     #simple constructor for response
     def build_response(self, rule: dict, event: dict) -> dict:
-        
         response = rule["response"]
         return {
             "rule_id": rule["id"],
             "title": response["title"],
             "message": response["message"],
             "severity": response["severity"],
+            "metadata": rule.get("metadata", {}),
             "matched_event": event,
         }
     

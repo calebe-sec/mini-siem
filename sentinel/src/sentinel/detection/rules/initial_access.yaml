@@ -1,0 +1,33 @@
+version: 1.0
+category: initial_access
+
+rules:
+  - id: IAC-001
+    name: Root SSH Login Accepted
+    enabled: true
+
+    metadata:
+      description: A direct SSH login as root succeeded. Root login over SSH is rarely legitimate.
+      severity: high
+      confidence: 70
+      author: Calebe
+      created: 2026-11-09
+      mitre:
+        tactic: initial_access
+        technique: T1078
+
+    when:
+      all:
+        - field: event_type
+          operator: equals
+          value: ssh_accepted_password
+
+        - field: username
+          operator: equals
+          value: root
+
+    response:
+      alert: true
+      title: Root SSH Login Accepted
+      message: An SSH password login as root was accepted.
+      severity: high

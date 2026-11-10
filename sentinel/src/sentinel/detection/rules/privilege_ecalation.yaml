@@ -1,0 +1,29 @@
+version: 1.0
+category: privilege_escalation
+
+rules:
+  - id: SUDO-001
+    name: Sudo Authentication Failure
+    enabled: true
+
+    metadata:
+      description: A sudo authentication failed, which may be a user typo or a privilege escalation attempt.
+      severity: medium
+      confidence: 50
+      author: Calebe
+      created: 2026-11-09
+      mitre:
+          actic: privilege_escalation
+          technique: T1548.003
+
+    when:
+      all:
+        - field: event_type
+          operator: equals
+          value: sudo_auth_failure
+
+    response:
+      alert: true
+      title: Sudo Authentication Failure
+      message: A sudo authentication failure was logged.
+      severity: medium

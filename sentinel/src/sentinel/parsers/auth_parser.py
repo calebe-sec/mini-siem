@@ -4,8 +4,13 @@ import yaml
 from .base_parser import BaseParser, load_patterns
 
 
+
 class AuthLogParser(BaseParser):
-    HEADER = re.compile(r"(?P<month>[a-zA-Z]{3})\s+(?P<day>\d{2})\s+(?P<hour>\d{2}:\d{2}:\d{2})\s+(?P<hostname>[\w-]+)\s+(?P<process>[\w-]+)\[(?P<pid>\d+)\]:\s+(?P<message>.*)", re.VERBOSE,)
+
+    HEADER = re.compile(
+    r"(?P<month>[a-zA-Z]{3})\s+(?P<day>\d{1,2})\s+(?P<hour>\d{2}:\d{2}:\d{2})\s+"
+    r"(?P<hostname>[\w.-]+)\s+(?P<process>[\w-]+)(?:\[(?P<pid>\d+)\])?:\s+(?P<message>.*)"
+)
 
     def __init__(self, patterns_path="config/log_patterns.yaml"):
         self.ssh_patterns = load_patterns(patterns_path, "ssh")
@@ -40,6 +45,7 @@ class AuthLogParser(BaseParser):
                     "process"    : match.group("process"),
                     "pid"        : match.group("pid"),
                     "event_type" : event_type,
+                    "message"    : msg,
                     **details,
                 })
 
@@ -52,4 +58,4 @@ if __name__ == "__main__":
     for event in events:
         print(event)
 
-    print(f"\n Total de eventos: {len(events)}")
+    print(f"\n Events Total: {len(events)}")

@@ -17,9 +17,9 @@ from datetime import datetime
 
 import numpy as np
 
-from sentinel.ml.anomaly import AnomalyDetector
-from sentinel.ml.features import FeatureConfig, build_windows
-from sentinel.ml.synthetic import ATTACK_NAMES, attack_events, clean_events
+from sentinel.ml.anomaly import AnomalyDetector # type: ignore
+from sentinel.ml.features import FeatureConfig, build_windows # type: ignore
+from sentinel.ml.synthetic import ATTACK_NAMES, attack_events, clean_events # type: ignore
 
 SEED = 42            # arbitrary, only there so every run gives the same numbers
 TRAIN_WINDOWS = 2000      # clean baseline (September)

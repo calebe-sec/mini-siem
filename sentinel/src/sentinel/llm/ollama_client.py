@@ -25,6 +25,16 @@ class OllamaClient:
         self.num_predict = num_predict  # cap the answer length (speed on CPU)
         self.keep_alive = keep_alive    # keep the model in RAM between alerts
 
+    def is_available(self) -> bool:
+        """True if the Ollama server answers and the model is installed."""
+        try:
+            response = requests.get(f"{self.host}/api/tags", timeout=self.timeout[0])
+            response.raise_for_status()
+            names = [m.get("name", "") for m in response.json().get("models", [])]
+        except (requests.exceptions.RequestException, ValueError):
+            return False
+        return any(name == self.model or name.split(":")[0] == self.model for name in names)
+
     def complete(self, messages: list[dict], schema: dict) -> str:
         body = {
             "model": self.model,

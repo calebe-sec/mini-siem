@@ -1,12 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>logrecon</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LogRecon · Security monitoring</title>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <h1>Welcome to Web-Site</h1>
-    
+  <a class="skip" href="#alerts">Skip to alerts</a>
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div><h1>LogRecon</h1><p>mini-SIEM</p></div>
+    </div>
+    <nav aria-label="Sections">
+      <a href="#overview" class="nav-link">Overview</a>
+      <a href="#alerts" class="nav-link">Alerts</a>
+      <a href="#events" class="nav-link">Events</a>
+    </nav>
+    <div class="feed" aria-live="polite">
+      <span id="feed-dot" class="feed-dot" aria-hidden="true"></span>
+      <div><strong id="feed-state">Connecting</strong><span id="last-updated">Loading...</span></div>
+    </div>
+  </aside>
+
+  <div class="shell">
+    <header class="topbar">
+      <h2 id="page-title">Security overview</h2>
+      <div class="topbar-actions">
+        <button id="refresh" type="button" class="btn">Refresh</button>
+        <a class="btn btn-ghost" href="/logout">Sign out</a>
+      </div>
+    </header>
+
+    <main>
+      <div id="error-banner" class="banner" role="alert" hidden></div>
+
+      <section id="overview" aria-label="Overview">
+        <dl class="kpis">
+          <div class="kpi"><dt>Alerts</dt><dd id="stat-alerts">-</dd></div>
+          <div class="kpi kpi-open"><dt>Open</dt><dd id="stat-open">-</dd></div>
+          <div class="kpi kpi-critical"><dt>Critical</dt><dd id="stat-critical">-</dd></div>
+          <div class="kpi kpi-high"><dt>High</dt><dd id="stat-high">-</dd></div>
+          <div class="kpi"><dt>Events</dt><dd id="stat-events">-</dd></div>
+        </dl>
+
+        <div class="overview-grid">
+          <section class="panel span-2" aria-labelledby="tl-title">
+            <div class="panel-head">
+              <h3 id="tl-title">Event activity</h3>
+              <span id="tl-range" class="muted">-</span>
+            </div>
+            <div id="timeline" class="timeline"></div>
+          </section>
+
+          <section class="panel" aria-labelledby="sev-title">
+            <div class="panel-head"><h3 id="sev-title">Alerts by severity</h3></div>
+            <div class="panel-body">
+              <div id="sev-bar" class="stackbar" role="img" aria-label="Alert severity distribution"></div>
+              <ul id="sev-legend" class="legend"></ul>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="ips-title">
+            <div class="panel-head"><h3 id="ips-title">Top source IPs</h3></div>
+            <ul id="top-ips" class="rank"></ul>
+          </section>
+
+          <section class="panel" aria-labelledby="types-title">
+            <div class="panel-head"><h3 id="types-title">Event types</h3></div>
+            <ul id="top-types" class="rank"></ul>
+          </section>
+        </div>
+      </section>
+
+      <section id="alerts" class="panel" aria-labelledby="alerts-title">
+        <div class="panel-head">
+          <h3 id="alerts-title">Alerts <span id="alerts-count" class="muted"></span></h3>
+          <div class="filters">
+            <input id="search" type="search" placeholder="Search rule or description" aria-label="Search alerts">
+            <select id="severity-filter" aria-label="Filter by severity">
+              <option value="ALL">All severities</option>
+              <option value="critical">Critical</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <select id="status-filter" aria-label="Filter by status"></select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <caption class="sr">Alerts, newest first. Select a row to inspect it.</caption>
+            <thead><tr><th scope="col">Time</th><th scope="col">Severity</th><th scope="col">Rule</th><th scope="col">Status</th><th scope="col">Description</th></tr></thead>
+            <tbody id="alerts-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="events" class="panel" aria-labelledby="events-title">
+        <div class="panel-head">
+          <h3 id="events-title">Recent events</h3>
+          <span id="events-count" class="muted"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <caption class="sr">Most recent security events</caption>
+            <thead><tr><th scope="col">Time</th><th scope="col">Source IP</th><th scope="col">Type</th><th scope="col">User</th><th scope="col">Severity</th><th scope="col">Message</th></tr></thead>
+            <tbody id="events-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="detail" aria-labelledby="detail-title">
+    <div class="dialog-head">
+      <h3 id="detail-title">Alert details</h3>
+      <button id="detail-close" type="button" class="btn btn-ghost">Close</button>
+    </div>
+    <dl id="detail-body" class="detail"></dl>
+  </dialog>
+
+  <script src="/js/app.js"></script>
 </body>
 </html>

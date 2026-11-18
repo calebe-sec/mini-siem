@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Optional, Sequence
 
+import os
 import requests
 
 from sentinel.core.alert import AlertCandidate

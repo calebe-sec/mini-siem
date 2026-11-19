@@ -90,8 +90,8 @@ LogRecon **does not decide what an alert is**; that responsibility belongs to Se
 - [x] **Step 4: Alerts REST API**
     - [x] `POST /api/alerts`: receives an alert already classified by Sentinel (creates or reuses a `DetectionRule` + links `LogEvent`s through `AlertEvent`)
     - [x] `GET /api/alerts`: lists/filters alerts, with pagination
-- [X] **Step 5: Service-to-service authentication** (simple API key between Sentinel and LogRecon)
-- [X] **Step 6: Dashboard** (plain HTML/CSS/JS consuming the API: table of recent events, counter by severity, chart of events per hour)
+- [x] **Step 5: Service-to-service authentication** (simple API key between Sentinel and LogRecon)
+- [x] **Step 6: Dashboard** (plain HTML/CSS/JS consuming the API: table of recent events, counter by severity, chart of events per hour)
 - [ ] **Step 7: GitHub polish** (the repository's own README, dashboard screenshots, sample log included)
 
 ---
